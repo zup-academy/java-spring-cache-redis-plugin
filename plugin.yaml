@@ -6,6 +6,8 @@ category: backend # Ref: https://docs.stackspot.com/latest/docs/creators-guide/y
 compatibility:
   - java
   - spring
+  - maven
+  - application.yaml
 about: docs/about.md
 usage: docs/usage.md
 use-case: docs/use-case.md
@@ -14,18 +16,59 @@ technologies: # Ref: https://docs.stackspot.com/latest/docs/creators-guide/yaml/
   - "Api"
 types:
   - app
-inputs:
-  - label: Input Example
-    type: text
-    name: example
-    default: any text
-  - label: Example of number
-    type: int
-    name: any_number
-    default: "10"
-  - label: Example of list
-    type: multiselect
-    name: any_list
-    items:
-      - item1
-      - item2
+computed-inputs:
+  directory: "{{directory_path | replace('.','/')}}"
+  directory_test: "{{directory_test_path | replace('.','/')}}"
+hooks:
+  ##
+  # Edit pom.xml add multiples dependencies with Spring Data Redis and Test Containers
+  ##
+  - type: edit
+    path: pom.xml
+    trigger: after-render
+    changes:
+      - search:
+          string: "</dependencies>"
+          insert-before:
+            snippet: snippets/snippet-pom.xml
+          when:
+            not-exists-snippet: snippets/snippet-pom.xml
+      - search:
+          string: "</dependencies>"
+          insert-before:
+            snippet: snippets/snippet-pom-dependecies-test-containers-redis.xml
+          when:
+            not-exists: "testcontainers-redis-junit"
+
+  ##
+  # Edit application.yaml
+  ##
+  - type: edit
+    path: src/main/resources/application.yaml
+    trigger: after-render
+    changes:
+      - search:
+          string: "spring:"
+          insert-after:
+            snippet: snippets/snippet-application.yaml
+          when:
+            not-exists-snippet: snippets/snippet-application.yaml
+      - insert:
+          line: -1 
+          value: "\nlogging.level.org.springframework.cache: TRACE"
+          when:
+            not-exists: "logging.level.org.springframework.cache: TRACE"
+          
+  ##
+  # Create or edit docker-compose.yaml
+  ##
+  - type: render-templates
+    trigger: after-render
+    path: snippets/docker-redis
+
+  ##
+  # Create path directory samples
+  ##
+  - type: run-script
+    trigger: before-input
+    script: snippets/open-pom.py
