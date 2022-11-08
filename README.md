@@ -31,7 +31,7 @@ git status
 
 Nice! You're ready for production I guess 🥳
 
-[See here the benefits and how you can get the most out of the Java Spring Cache Redis Plugin](http://video-will-be-published.soon/)
+[See here the benefits and how you can get the most out of the Java Spring Cache Redis Plugin](https://youtu.be/-2GJR3e4LDs)
 
 ## Support
 
